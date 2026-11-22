@@ -1,8 +1,13 @@
-const { ORDER_STATUS } = require('../../src/orders/orderStatus');
+const {
+  ORDER_STATUS,
+  CANONICAL_STATUSES,
+  isKnownStatus,
+} = require('../../src/orders/orderStatus');
 const {
   canTransition,
   transitionOrder,
   InvalidTransitionError,
+  ALLOWED_TRANSITIONS,
 } = require('../../src/orders/orderStateMachine');
 
 describe('Order Status State Machine (RB-401)', () => {
@@ -14,6 +19,32 @@ describe('Order Status State Machine (RB-401)', () => {
     Delivered,
     Rejected,
   } = ORDER_STATUS;
+
+  describe('orderStatus constants and helpers', () => {
+    test('defines all canonical statuses as named constants', () => {
+      expect(Pending).toBe('Pending');
+      expect(Accepted).toBe('Accepted');
+      expect(Preparing).toBe('Preparing');
+      expect(OutForDelivery).toBe('OutForDelivery');
+      expect(Delivered).toBe('Delivered');
+      expect(Rejected).toBe('Rejected');
+    });
+
+    test('isKnownStatus recognizes canonical statuses and rejects unknown ones', () => {
+      for (const status of CANONICAL_STATUSES) {
+        expect(isKnownStatus(status)).toBe(true);
+      }
+      expect(isKnownStatus('Unknown')).toBe(false);
+      expect(isKnownStatus('')).toBe(false);
+      expect(isKnownStatus(null)).toBe(false);
+      expect(isKnownStatus(undefined)).toBe(false);
+    });
+
+    test('ALLOWED_TRANSITIONS map is deeply frozen', () => {
+      expect(Object.isFrozen(ALLOWED_TRANSITIONS)).toBe(true);
+      expect(Object.isFrozen(ALLOWED_TRANSITIONS[Pending])).toBe(true);
+    });
+  });
 
   describe('canTransition', () => {
     test('returns true for every allowed transition', () => {

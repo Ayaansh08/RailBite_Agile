@@ -10,7 +10,7 @@ const ORDER_STATUS = Object.freeze({
   OutForDelivery: 'OutForDelivery',
   Delivered: 'Delivered',
   Rejected: 'Rejected',
-  // Uppercase aliases
+  // Uppercase aliases for conventional enum-style access
   PENDING: 'Pending',
   ACCEPTED: 'Accepted',
   PREPARING: 'Preparing',
@@ -19,7 +19,25 @@ const ORDER_STATUS = Object.freeze({
   REJECTED: 'Rejected',
 });
 
-// Mapping from old prototype strings (railbite-old) to canonical statuses
+const CANONICAL_STATUSES = Object.freeze([
+  ORDER_STATUS.Pending,
+  ORDER_STATUS.Accepted,
+  ORDER_STATUS.Preparing,
+  ORDER_STATUS.OutForDelivery,
+  ORDER_STATUS.Delivered,
+  ORDER_STATUS.Rejected,
+]);
+
+/**
+ * Validates whether a status string is one of the canonical statuses.
+ * @param {string} status
+ * @returns {boolean}
+ */
+const isKnownStatus = (status) => CANONICAL_STATUSES.includes(status);
+
+/**
+ * Mapping from old prototype strings (railbite-old) to canonical statuses.
+ */
 const LEGACY_STATUS_MAPPING = Object.freeze({
   'Pending Payment': ORDER_STATUS.Pending,
   Paid: ORDER_STATUS.Pending,
@@ -32,6 +50,8 @@ const LEGACY_STATUS_MAPPING = Object.freeze({
 
 module.exports = {
   ORDER_STATUS,
+  CANONICAL_STATUSES,
+  isKnownStatus,
   LEGACY_STATUS_MAPPING,
   Pending: ORDER_STATUS.Pending,
   Accepted: ORDER_STATUS.Accepted,

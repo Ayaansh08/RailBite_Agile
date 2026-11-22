@@ -14,35 +14,40 @@ class InvalidTransitionError extends Error {
   }
 }
 
-// Transition graph adapted from VALID_TRANSITIONS in railbite-old
+/**
+ * Immutable map defining allowed forward transitions for each order status.
+ * Terminal states (Delivered, Rejected) have empty transition targets.
+ */
 const ALLOWED_TRANSITIONS = Object.freeze({
-  [ORDER_STATUS.PENDING]: Object.freeze([ORDER_STATUS.ACCEPTED, ORDER_STATUS.REJECTED]),
-  [ORDER_STATUS.ACCEPTED]: Object.freeze([ORDER_STATUS.PREPARING]),
-  [ORDER_STATUS.PREPARING]: Object.freeze([ORDER_STATUS.OUT_FOR_DELIVERY]),
-  [ORDER_STATUS.OUT_FOR_DELIVERY]: Object.freeze([ORDER_STATUS.DELIVERED]),
-  [ORDER_STATUS.DELIVERED]: Object.freeze([]),
-  [ORDER_STATUS.REJECTED]: Object.freeze([]),
+  [ORDER_STATUS.Pending]: Object.freeze([ORDER_STATUS.Accepted, ORDER_STATUS.Rejected]),
+  [ORDER_STATUS.Accepted]: Object.freeze([ORDER_STATUS.Preparing]),
+  [ORDER_STATUS.Preparing]: Object.freeze([ORDER_STATUS.OutForDelivery]),
+  [ORDER_STATUS.OutForDelivery]: Object.freeze([ORDER_STATUS.Delivered]),
+  [ORDER_STATUS.Delivered]: Object.freeze([]),
+  [ORDER_STATUS.Rejected]: Object.freeze([]),
 });
 
 /**
  * Checks whether a transition between two statuses is allowed.
- * @param {string} from
- * @param {string} to
- * @returns {boolean}
+ * @param {string} from - Current status of order
+ * @param {string} to - Intended target status
+ * @returns {boolean} True if allowed, false otherwise
  */
 const canTransition = (from, to) => {
   if (!from || !to) return false;
   const targets = ALLOWED_TRANSITIONS[from];
-  if (!targets) return false;
-  return targets.includes(to);
+  return Boolean(targets && targets.includes(to));
 };
 
 /**
- * Enforces transition on an order, returning a brand new order object.
- * @param {object} order
- * @param {string} to
- * @param {Date|string} [now=new Date()]
- * @returns {object} new order object
+ * Enforces a state transition on an order, returning an immutable new order object.
+ * Does not mutate the input order. Appends a statusHistory record { status, at }.
+ *
+ * @param {object} order - Current order object
+ * @param {string} to - Intended target status
+ * @param {Date|string} [now=new Date()] - Transition timestamp for status history
+ * @returns {object} New order object with updated status and appended history entry
+ * @throws {InvalidTransitionError} If transition is invalid or order is missing
  */
 const transitionOrder = (order, to, now = new Date()) => {
   if (!order || typeof order !== 'object') {
@@ -75,4 +80,5 @@ module.exports = {
   canTransition,
   transitionOrder,
   InvalidTransitionError,
+  ALLOWED_TRANSITIONS,
 };
