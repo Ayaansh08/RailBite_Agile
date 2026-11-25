@@ -10,15 +10,8 @@ const { getVendorsByStation } = require('./vendorService');
  * Fetches vendors for a given railway station.
  */
 const getVendors = (req, res) => {
-  const { station } = req.query;
-
-  if (!station || typeof station !== 'string' || station.trim() === '') {
-    return res.status(400).json({
-      message: 'Station query parameter is required',
-    });
-  }
-
   try {
+    const { station } = req.query;
     const vendors = getVendorsByStation(station);
     return res.status(200).json({
       vendors,

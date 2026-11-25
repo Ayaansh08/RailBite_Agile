@@ -5,6 +5,34 @@
 
 const { mockVendors } = require('./data/mockVendors');
 
+const ERROR_MESSAGES = {
+  STATION_REQUIRED: 'Station code is required',
+};
+
+/**
+ * Normalizes a station code by trimming whitespace and converting to uppercase.
+ *
+ * @param {string} stationCode
+ * @returns {string}
+ * @throws {Error} If stationCode is missing, non-string, empty, or whitespace-only
+ */
+const normalizeStationCode = (stationCode) => {
+  if (!stationCode || typeof stationCode !== 'string' || stationCode.trim() === '') {
+    throw new Error(ERROR_MESSAGES.STATION_REQUIRED);
+  }
+  return stationCode.trim().toUpperCase();
+};
+
+/**
+ * Sorts vendors in ascending alphabetical order by name deterministically.
+ *
+ * @param {Array<object>} vendors
+ * @returns {Array<object>}
+ */
+const sortVendorsByName = (vendors) => {
+  return [...vendors].sort((a, b) => a.name.localeCompare(b.name));
+};
+
 /**
  * Retrieves all vendors located at the specified railway station code.
  *
@@ -13,19 +41,18 @@ const { mockVendors } = require('./data/mockVendors');
  * @throws {Error} If stationCode is missing, null, empty, or whitespace-only
  */
 const getVendorsByStation = (stationCode) => {
-  if (!stationCode || typeof stationCode !== 'string' || stationCode.trim() === '') {
-    throw new Error('Station code is required');
-  }
-
-  const normalizedStation = stationCode.trim().toUpperCase();
+  const normalizedStation = normalizeStationCode(stationCode);
 
   const matchingVendors = mockVendors.filter(
     (vendor) => vendor.stationCode.toUpperCase() === normalizedStation
   );
 
-  return matchingVendors.sort((a, b) => a.name.localeCompare(b.name));
+  return sortVendorsByName(matchingVendors);
 };
 
 module.exports = {
   getVendorsByStation,
+  normalizeStationCode,
+  sortVendorsByName,
+  ERROR_MESSAGES,
 };
