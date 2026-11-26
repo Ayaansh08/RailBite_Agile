@@ -82,7 +82,12 @@ describe('OrderTracker & useOrderTracking (RB-107)', () => {
 
     expect(screen.getByText('Shatabdi Meals')).toBeInTheDocument();
     expect(screen.getByText(/12:15/)).toBeInTheDocument();
-    expect(screen.getByText(expectedLabel)).toBeInTheDocument();
+    // The label appears as the highlighted step in the timeline (aria-current="step")
+    if (status === ORDER_STATUS.Rejected) {
+      expect(screen.getByRole('alert')).toHaveTextContent(expectedLabel);
+    } else {
+      expect(screen.getByRole('listitem', { current: 'step' })).toHaveTextContent(expectedLabel);
+    }
   });
 
   it('renders a safe fallback label when status is unknown', async () => {
@@ -195,13 +200,13 @@ describe('OrderTracker & useOrderTracking (RB-107)', () => {
     await act(async () => {
       await Promise.resolve();
     });
-    expect(screen.getByText('Being prepared')).toBeInTheDocument();
+    expect(screen.getByRole('listitem', { current: 'step' })).toHaveTextContent('Being prepared');
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(2000);
     });
 
-    expect(screen.getByText('Being prepared')).toBeInTheDocument();
+    expect(screen.getByRole('listitem', { current: 'step' })).toHaveTextContent('Being prepared');
     expect(screen.getByRole('alert')).toHaveTextContent(/retry/i);
   });
 });
