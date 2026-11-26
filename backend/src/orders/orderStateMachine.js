@@ -11,6 +11,7 @@ class InvalidTransitionError extends Error {
     super(`Cannot transition order from "${from}" to "${to}".`);
     this.name = 'InvalidTransitionError';
     this.statusCode = 400;
+    this.code = 'INVALID_TRANSITION';
   }
 }
 
