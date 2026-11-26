@@ -15,6 +15,7 @@ const mockJourneys = {
     to: { code: "LKO", name: "Lucknow" },
     departure: "2026-04-29T10:00:00",
     arrival: "2026-04-29T16:30:00",
+    delayMinutes: 0,
     journeyStations: [
       { code: "NDLS", name: "New Delhi",   stopType: "starting",    arrivalTime: null,    departureTime: "10:00" },
       { code: "KURJ", name: "Kurukshetra", stopType: "halting",     arrivalTime: "11:45", departureTime: "11:47" },
@@ -34,6 +35,7 @@ const mockJourneys = {
     to: { code: "HWH", name: "Howrah" },
     departure: "2026-04-29T16:55:00",
     arrival: "2026-04-30T09:55:00",
+    delayMinutes: 0,
     journeyStations: [
       { code: "NDLS", name: "New Delhi",  stopType: "starting",    arrivalTime: null,    departureTime: "16:55" },
       { code: "GAYA", name: "Gaya Jn",    stopType: "halting",     arrivalTime: "00:52", departureTime: "00:54" },
@@ -53,6 +55,7 @@ const mockJourneys = {
     to: { code: "NDLS", name: "New Delhi" },
     departure: "2026-04-29T23:00:00",
     arrival: "2026-04-30T15:55:00",
+    delayMinutes: 0,
     journeyStations: [
       { code: "MMCT", name: "Mumbai Central", stopType: "starting",    arrivalTime: null,    departureTime: "23:00" },
       { code: "ST",   name: "Surat",          stopType: "halting",     arrivalTime: "01:30", departureTime: "01:32" },
@@ -72,6 +75,7 @@ const mockJourneys = {
     to: { code: "PNBE", name: "Patna" },
     departure: "2026-04-29T19:30:00",
     arrival: "2026-04-30T07:00:00",
+    delayMinutes: 0,
     journeyStations: [
       { code: "NDLS", name: "New Delhi", stopType: "starting",    arrivalTime: null,    departureTime: "19:30" },
       { code: "CNB",  name: "Kanpur",    stopType: "halting",     arrivalTime: "00:10", departureTime: "00:12" },
@@ -91,6 +95,7 @@ const mockJourneys = {
     to: { code: "BCT", name: "Mumbai Central" },
     departure: "2026-04-29T17:05:00",
     arrival: "2026-04-30T08:35:00",
+    delayMinutes: 0,
     journeyStations: [
       { code: "NDLS", name: "New Delhi",    stopType: "starting",    arrivalTime: null,    departureTime: "17:05" },
       { code: "RTM",  name: "Ratlam",       stopType: "halting",     arrivalTime: "02:00", departureTime: "02:05" },
