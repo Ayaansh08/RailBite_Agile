@@ -1,20 +1,21 @@
 export const JOURNEY_STORAGE_KEY = 'railbite.journeyData';
 
-function isValidStation(station) {
-  if (station === null) return true;
+function hasStationIdentity(station) {
   return (
+    station !== null &&
     typeof station === 'object' &&
     typeof station.code === 'string' &&
     typeof station.name === 'string'
   );
 }
 
+function isValidStation(station) {
+  return station === null || hasStationIdentity(station);
+}
+
 function isValidUpcomingStation(station) {
   return (
-    station !== null &&
-    typeof station === 'object' &&
-    typeof station.code === 'string' &&
-    typeof station.name === 'string' &&
+    hasStationIdentity(station) &&
     (station.arrivalTime === null || typeof station.arrivalTime === 'string')
   );
 }
