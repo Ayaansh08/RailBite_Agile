@@ -169,6 +169,11 @@ describe('RB-402: Orders API for a vendor', () => {
       expect(publicOrder.pnr).toBeUndefined();
       expect(publicOrder.pnrLast4).toBe('');
     });
+
+    test('returns primitive or null input safely', () => {
+      expect(toPublicOrder(null)).toBeNull();
+      expect(toPublicOrder(undefined)).toBeUndefined();
+    });
   });
 
   describe('orderRoutes.js: Express Router endpoints', () => {
@@ -196,6 +201,14 @@ describe('RB-402: Orders API for a vendor', () => {
       app = express();
       app.use(express.json());
       app.use('/api/orders', createOrdersRouter({ repository: repo }));
+    });
+
+    describe('Router initialization', () => {
+      test('createOrdersRouter initializes router with default options', () => {
+        const router = createOrdersRouter();
+        expect(router).toBeDefined();
+        expect(typeof router).toBe('function');
+      });
     });
 
     describe('GET /api/orders?vendorId=ID', () => {
