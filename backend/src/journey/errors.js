@@ -9,35 +9,36 @@ const ERROR_CODES = {
   JOURNEY_COMPLETED: 'JOURNEY_COMPLETED',
 };
 
-class ValidationError extends Error {
-  constructor(message) {
+class JourneyError extends Error {
+  constructor(message, status, code) {
     super(message);
-    this.name = 'ValidationError';
-    this.status = 400;
-    this.code = ERROR_CODES.INVALID_PNR;
+    this.name = this.constructor.name;
+    this.status = status;
+    this.code = code;
   }
 }
 
-class NotFoundError extends Error {
+class ValidationError extends JourneyError {
   constructor(message) {
-    super(message);
-    this.name = 'NotFoundError';
-    this.status = 404;
-    this.code = ERROR_CODES.PNR_NOT_FOUND;
+    super(message, 400, ERROR_CODES.INVALID_PNR);
   }
 }
 
-class JourneyCompletedError extends Error {
+class NotFoundError extends JourneyError {
+  constructor(message) {
+    super(message, 404, ERROR_CODES.PNR_NOT_FOUND);
+  }
+}
+
+class JourneyCompletedError extends JourneyError {
   constructor(message = 'This journey has already ended.') {
-    super(message);
-    this.name = 'JourneyCompletedError';
-    this.status = 410;
-    this.code = ERROR_CODES.JOURNEY_COMPLETED;
+    super(message, 410, ERROR_CODES.JOURNEY_COMPLETED);
   }
 }
 
 module.exports = {
   ERROR_CODES,
+  JourneyError,
   ValidationError,
   NotFoundError,
   JourneyCompletedError,
