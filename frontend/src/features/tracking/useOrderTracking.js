@@ -7,13 +7,15 @@ export const DEFAULT_POLL_INTERVAL_MS = 10000;
 export function useOrderTracking(orderId, pollIntervalMs = DEFAULT_POLL_INTERVAL_MS) {
   const [order, setOrder] = useState(null);
   const [error, setError] = useState(null);
-  const isFetchingRef = useRef(false);
-  const intervalRef = useRef(null);
+
+  // Guards to prevent overlapping requests and polling after terminal state
+  const pendingRef = useRef(false);
   const stoppedRef = useRef(false);
+  const intervalRef = useRef(null);
 
   const poll = useCallback(async () => {
-    if (isFetchingRef.current || stoppedRef.current) return;
-    isFetchingRef.current = true;
+    if (pendingRef.current || stoppedRef.current) return;
+    pendingRef.current = true;
     try {
       const data = await fetchOrder(orderId);
       setOrder(data);
@@ -25,14 +27,18 @@ export function useOrderTracking(orderId, pollIntervalMs = DEFAULT_POLL_INTERVAL
     } catch (err) {
       setError(err);
     } finally {
-      isFetchingRef.current = false;
+      pendingRef.current = false;
     }
   }, [orderId]);
 
   useEffect(() => {
+    // Reset guards when orderId changes
+    pendingRef.current = false;
     stoppedRef.current = false;
+
     poll();
     intervalRef.current = setInterval(poll, pollIntervalMs);
+
     return () => {
       clearInterval(intervalRef.current);
     };
