@@ -39,12 +39,24 @@ export function saveJourneyData(journeyData) {
   }
 }
 
-export function loadJourneyData() {
+export function isJourneyExpired(journeyData) {
+  return !journeyData || !Array.isArray(journeyData.upcomingStations) || journeyData.upcomingStations.length === 0;
+}
+
+export function loadJourneyData({ onExpired } = {}) {
   try {
     const raw = localStorage.getItem(JOURNEY_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    return isValidJourneyData(parsed) ? parsed : null;
+    if (!isValidJourneyData(parsed)) return null;
+    if (isJourneyExpired(parsed)) {
+      clearJourneyData();
+      if (typeof onExpired === 'function') {
+        onExpired();
+      }
+      return null;
+    }
+    return parsed;
   } catch {
     return null;
   }

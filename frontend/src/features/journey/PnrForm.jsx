@@ -3,6 +3,22 @@ import { isValidPnr } from './pnrValidation';
 import { fetchRoute } from './journeyService';
 import { saveJourneyData } from './journeyStorage';
 
+const ERROR_MESSAGES = {
+  INVALID_PNR: 'Please enter a valid 10-digit PNR number.',
+  PNR_NOT_FOUND: 'We could not find a journey for that PNR. Please check and try again.',
+  JOURNEY_COMPLETED: 'This journey has already ended.',
+};
+
+const FALLBACK_ERROR_MESSAGE = 'Could not verify PNR. Please try again.';
+
+function mapApiError(err) {
+  const code = err?.response?.data?.code;
+  if (code && ERROR_MESSAGES[code]) {
+    return ERROR_MESSAGES[code];
+  }
+  return FALLBACK_ERROR_MESSAGE;
+}
+
 export default function PnrForm({ onSuccess }) {
   const [pnr, setPnr] = useState('');
   const [error, setError] = useState('');
@@ -10,25 +26,22 @@ export default function PnrForm({ onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isValidPnr(pnr)) {
-      setError('Please enter a valid 10-digit PNR number.');
+    const trimmedPnr = pnr.trim();
+    if (!isValidPnr(trimmedPnr)) {
+      setError(ERROR_MESSAGES.INVALID_PNR);
       return;
     }
 
     setLoading(true);
     setError('');
     try {
-      const journeyData = await fetchRoute(pnr);
+      const journeyData = await fetchRoute(trimmedPnr);
       saveJourneyData(journeyData);
       if (onSuccess) {
         onSuccess(journeyData);
       }
     } catch (err) {
-      setError(
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        'Could not verify PNR. Please try again.'
-      );
+      setError(mapApiError(err));
     } finally {
       setLoading(false);
     }
@@ -50,7 +63,14 @@ export default function PnrForm({ onSuccess }) {
       <button type="submit" disabled={loading}>
         {loading ? 'Checking...' : 'Find Journey'}
       </button>
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <div>
+          <p role="alert">{error}</p>
+          <button type="button" onClick={() => setError('')}>
+            Retry
+          </button>
+        </div>
+      )}
     </form>
   );
 }
