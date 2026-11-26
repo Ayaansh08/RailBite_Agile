@@ -31,6 +31,9 @@ const SAMPLE_JOURNEY = {
 describe('journeyStorage (RB-105)', () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  afterEach(() => {
     vi.restoreAllMocks();
   });
 
