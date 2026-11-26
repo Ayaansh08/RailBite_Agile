@@ -158,7 +158,9 @@ describe('RB-403: VendorDashboard with arrival time and order fulfillment', () =
       });
 
       const refreshBtn = screen.getByRole('button', { name: /Refresh/i });
-      fireEvent.click(refreshBtn);
+      await act(async () => {
+        fireEvent.click(refreshBtn);
+      });
 
       expect(fetchVendorOrders).toHaveBeenCalledTimes(2);
     });
@@ -182,6 +184,11 @@ describe('RB-403: VendorDashboard with arrival time and order fulfillment', () =
 
       // Initial fetch
       expect(fetchVendorOrders).toHaveBeenCalledTimes(1);
+
+      // Wait for initial fetch to resolve
+      await act(async () => {
+        await Promise.resolve();
+      });
 
       // Advance by 5000ms
       await act(async () => {
