@@ -193,4 +193,79 @@ describe('JourneyHeader (RB-105)', () => {
     expect(screen.getByText(/Lucknow/i)).toBeInTheDocument();
     expect(screen.getByText(/next station/i)).toBeInTheDocument();
   });
+
+  it('shows "Your journey has ended" when upcomingStations is empty', () => {
+    const ended = {
+      ...SAMPLE_JOURNEY,
+      currentStation: null,
+      nextStation: null,
+      upcomingStations: [],
+    };
+    render(<JourneyHeader journeyData={ended} />);
+
+    expect(screen.getByText(/your journey has ended/i)).toBeInTheDocument();
+  });
+});
+
+describe('RB-106: Error codes, whitespace trimming, and expired storage', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('trims whitespace around PNR before calling API', async () => {
+    const user = userEvent.setup();
+    const onSuccess = vi.fn();
+    axios.get.mockResolvedValueOnce({ data: SAMPLE_JOURNEY });
+
+    render(<PnrForm onSuccess={onSuccess} />);
+    await user.type(screen.getByLabelText(/pnr/i), '  1234567890  ');
+    await user.click(screen.getByRole('button', { name: /find|submit|check/i }));
+
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledWith(SAMPLE_JOURNEY));
+    expect(axios.get).toHaveBeenCalledWith('/api/journey/1234567890/route');
+  });
+
+  it.each([
+    ['INVALID_PNR', 400, /10-digit|valid pnr/i],
+    ['PNR_NOT_FOUND', 404, /not found|could not find/i],
+    ['JOURNEY_COMPLETED', 410, /ended|completed/i],
+  ])('maps error code %s to a human message without raw server text and offers retry', async (code, status, expectedPattern) => {
+    const user = userEvent.setup();
+    axios.get.mockRejectedValueOnce({
+      response: {
+        status,
+        data: { code, message: 'RAW_SERVER_STACK_DETAIL_XYZ' },
+      },
+    });
+
+    render(<PnrForm onSuccess={vi.fn()} />);
+    await user.type(screen.getByLabelText(/pnr/i), '1234567890');
+    await user.click(screen.getByRole('button', { name: /find|submit|check/i }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(expectedPattern);
+    expect(alert.textContent).not.toContain('RAW_SERVER_STACK_DETAIL_XYZ');
+
+    const retryBtn = screen.getByRole('button', { name: /retry|try again/i });
+    await user.click(retryBtn);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('treats saved journeyData with no upcoming stations as expired and clears it', () => {
+    const expiredJourney = {
+      ...SAMPLE_JOURNEY,
+      currentStation: null,
+      nextStation: null,
+      upcomingStations: [],
+    };
+    saveJourneyData(expiredJourney);
+    const onExpired = vi.fn();
+
+    const loaded = loadJourneyData({ onExpired });
+
+    expect(loaded).toBeNull();
+    expect(onExpired).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem(JOURNEY_STORAGE_KEY)).toBeNull();
+  });
 });
