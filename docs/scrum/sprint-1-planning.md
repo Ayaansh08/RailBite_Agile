@@ -10,10 +10,10 @@ Stand up the Express MVC skeleton with proper error handling so that all other s
 
 | Field | Value |
 |---|---|
-| Sprint Start | _ask Gaurav_ |
-| Sprint End | _ask Gaurav_ |
-| Sprint Review | _ask Gaurav_ |
-| Sprint Retro | _ask Gaurav_ |
+| Sprint Start | 22 November 2026 |
+| Sprint End | 23 November 2026 |
+| Sprint Review | 23 November 2026 |
+| Sprint Retro | 23 November 2026 |
 
 ## Team Capacity
 
