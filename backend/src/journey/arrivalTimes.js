@@ -22,6 +22,24 @@ function validateDelayMinutes(delayMinutes) {
 }
 
 /**
+ * Advances dayOffset when a "HH:mm" timestamp crosses midnight relative to lastHour.
+ * @param {string|null} timeStr
+ * @param {number} lastHour
+ * @param {number} dayOffset
+ * @returns {{ lastHour: number, dayOffset: number }}
+ */
+function advanceIfOvernight(timeStr, lastHour, dayOffset) {
+  if (!timeStr) {
+    return { lastHour, dayOffset };
+  }
+  const [hour] = timeStr.split(':').map(Number);
+  const nextOffset = (hour < lastHour && (lastHour - hour) > OVERNIGHT_HOUR_THRESHOLD)
+    ? dayOffset + 1
+    : dayOffset;
+  return { lastHour: hour, dayOffset: nextOffset };
+}
+
+/**
  * Computes the scheduled dayOffset (0, 1, 2...) for each station code in the journey.
  * @param {object} journey
  * @returns {Map<string, number>}
@@ -35,22 +53,12 @@ function buildStationDayOffsets(journey) {
   let lastHour = journey.departure ? new Date(journey.departure).getHours() : 0;
 
   for (const st of stations) {
-    const timeStr = st.arrivalTime || st.departureTime;
-    if (timeStr) {
-      const [hour] = timeStr.split(':').map(Number);
-      if (hour < lastHour && (lastHour - hour) > OVERNIGHT_HOUR_THRESHOLD) {
-        dayOffset += 1;
-      }
-      lastHour = hour;
-    }
+    const primaryTime = st.arrivalTime || st.departureTime;
+    ({ lastHour, dayOffset } = advanceIfOvernight(primaryTime, lastHour, dayOffset));
     offsets.set(st.code, dayOffset);
 
     if (st.arrivalTime && st.departureTime) {
-      const [depHour] = st.departureTime.split(':').map(Number);
-      if (depHour < lastHour && (lastHour - depHour) > OVERNIGHT_HOUR_THRESHOLD) {
-        dayOffset += 1;
-      }
-      lastHour = depHour;
+      ({ lastHour, dayOffset } = advanceIfOvernight(st.departureTime, lastHour, dayOffset));
     }
   }
 
